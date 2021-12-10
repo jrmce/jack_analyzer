@@ -1,0 +1,5 @@
+*.jack
+*.xml
+.vscode/
+JackAnalyzer
+tags
