@@ -23,14 +23,10 @@ void next_char() {
 }
 
 int peek_char() {
-  int c = fgetc(fp);
-  ungetc(c, fp);
-  return c;
-}
-
-bool is_comment() {
-  if (current_char == '/' && peek_char() == '/') {
-    return true;
+  if (has_more_chars) {
+    int c = fgetc(fp);
+    ungetc(c, fp);
+    return c;
   }
 
   return false;
@@ -40,46 +36,35 @@ void set_token_type() {
   if (current_token.literal[0] == '\0') {
     printf("Invalid token");
     exit(1);
-  } else if (strcmp(CLASS, current_token.literal) == 0 ||
-             strcmp(CONSTRUCTOR, current_token.literal) == 0 ||
-             strcmp(FUNCTION, current_token.literal) == 0 ||
-             strcmp(METHOD, current_token.literal) == 0 ||
-             strcmp(FIELD, current_token.literal) == 0 ||
-             strcmp(STATIC, current_token.literal) == 0 ||
-             strcmp(VAR, current_token.literal) == 0 ||
-             strcmp(INT, current_token.literal) == 0 ||
-             strcmp(CHAR, current_token.literal) == 0 ||
-             strcmp(BOOLEAN, current_token.literal) == 0 ||
-             strcmp(VOID, current_token.literal) == 0 ||
-             strcmp(J_TRUE, current_token.literal) == 0 ||
-             strcmp(J_FALSE, current_token.literal) == 0 ||
-             strcmp(J_NULL, current_token.literal) == 0 ||
-             strcmp(THIS, current_token.literal) == 0 ||
-             strcmp(LET, current_token.literal) == 0 ||
-             strcmp(DO, current_token.literal) == 0 ||
-             strcmp(IF, current_token.literal) == 0 ||
-             strcmp(ELSE, current_token.literal) == 0 ||
-             strcmp(WHILE, current_token.literal) == 0 ||
-             strcmp(RETURN, current_token.literal) == 0) {
+  } else if (is_keyword(&current_token)) {
     current_token.type = Keyword;
+  } else {
+    current_token.type = Identifier;
   }
 }
 
-void print_token() {
-  if (current_token.type == Keyword) {
-    fprintf(fp_out, "<keyword>%s</keyword>\n", current_token.literal);
-  }
-}
-
-void handle_comment() {
+void handle_line_comment() {
   while (current_char != '\n') {
+    next_char();
+  }
+  // Consume \n
+  next_char();
+}
+
+void handle_block_comment() {
+  while (true) {
+    if (current_char == '*' && peek_char() == '/') {
+      next_char();
+      next_char();
+      return;
+    }
     next_char();
   }
 }
 
 void handle_alpha_or_underscore() {
   int p = 0;
-  while (!isspace(current_char)) {
+  while (isalnum(current_char) || current_char == '_') {
     current_token.literal[p] = (char)current_char;
     p++;
     next_char();
@@ -87,6 +72,69 @@ void handle_alpha_or_underscore() {
 
   current_token.literal[p] = '\0';
   set_token_type();
+}
+
+void handle_digit() {
+  int p = 0;
+
+  while (isdigit(current_char)) {
+    current_token.literal[p] = (char)current_char;
+    p++;
+    next_char();
+  }
+
+  current_token.literal[p] = '\0';
+  current_token.type = IntConst;
+}
+
+void handle_double_quote() {
+  int p = 0;
+  next_char();
+
+  while (is_ascii((char)current_char) && current_char != '"') {
+    if (current_char == '\n') {
+      printf("New line in unterminated string: %s\n", current_token.literal);
+      exit(1);
+    }
+
+    current_token.literal[p] = (char)current_char;
+    p++;
+    next_char();
+  }
+
+  if (current_char == '"') {
+    current_token.literal[p] = '\0';
+    current_token.type = StringConst;
+    next_char();
+  } else {
+    printf("Unterminated string constant: %s\n", current_token.literal);
+    exit(1);
+  }
+}
+
+void handle_symbol() {
+  current_token.literal[0] = (char)current_char;
+  current_token.literal[1] = '\0';
+  current_token.type = Symbol;
+  next_char();
+}
+
+void handle_ignored() {
+  if (is_line_comment((char)current_char, (char)peek_char())) {
+    handle_line_comment();
+  } else if (is_block_comment((char)current_char, (char)peek_char())) {
+    handle_block_comment();
+  } else if (isspace(current_char)) {
+    next_char();
+  }
+
+  return;
+}
+
+bool ignore() {
+  return is_line_comment((char)current_char, (char)peek_char()) ||
+         is_block_comment((char)current_char, (char)peek_char()) ||
+         isspace(current_char);
 }
 
 void reset_token() {
@@ -113,16 +161,50 @@ void tokenize_file(char *filename) {
 void advance() {
   reset_token();
 
-  if (is_comment()) {
-    handle_comment();
-  } else if (isalpha(current_char) || current_char == '_') {
-    handle_alpha_or_underscore();
+  while (ignore()) {
+    handle_ignored();
   }
 
-  next_char();
+  if (isalpha(current_char) || current_char == '_') {
+    handle_alpha_or_underscore();
+  } else if (current_char == '"') {
+    handle_double_quote();
+  } else if (isdigit(current_char)) {
+    handle_digit();
+  } else if (is_symbol((char)current_char)) {
+    handle_symbol();
+  }
+
+  return;
 }
 
 bool has_more_tokens() { return has_more_chars; }
+
+void print_token() {
+  if (current_token.type == Keyword) {
+    fprintf(fp_out, "<keyword> %s </keyword>\n", current_token.literal);
+  } else if (current_token.type == StringConst) {
+    fprintf(fp_out, "<stringConstant> %s </stringConstant>\n",
+            current_token.literal);
+  } else if (current_token.type == IntConst) {
+    fprintf(fp_out, "<integerConstant> %s </integerConstant>\n",
+            current_token.literal);
+  } else if (current_token.type == Identifier) {
+    fprintf(fp_out, "<identifier> %s </identifier>\n", current_token.literal);
+  } else if (current_token.type == Symbol) {
+    if (current_token.literal[0] == LESS_THAN) {
+      fprintf(fp_out, "<symbol> &lt; </symbol>\n");
+    } else if (current_token.literal[0] == GREATER_THAN) {
+      fprintf(fp_out, "<symbol> &gt; </symbol>\n");
+    } else if (current_token.literal[0] == '"') {
+      fprintf(fp_out, "<symbol> &quot; </symbol>\n");
+    } else if (current_token.literal[0] == AMPERSAND) {
+      fprintf(fp_out, "<symbol> &amp; </symbol>\n");
+    } else {
+      fprintf(fp_out, "<symbol> %s </symbol>\n", current_token.literal);
+    }
+  }
+}
 
 void close_tokenizer() {
   fputs("</tokens>\n", fp_out);

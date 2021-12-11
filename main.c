@@ -32,7 +32,7 @@ void process_dir(char *dirname) {
   struct dirent *de;
 
   while ((de = readdir(dr)) != NULL) {
-    if (strstr(de->d_name, ".vm") != NULL) {
+    if (strstr(de->d_name, ".jack") != NULL) {
       char dirname_c[MAX_FILENAME_LENGTH];
       strcpy(dirname_c, dirname);
       strcat(dirname_c, "/");
