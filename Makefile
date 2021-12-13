@@ -12,3 +12,4 @@ run:
 	./$(PROG) test.jack
 clean:
 	rm -f $(PROG)
+	rm -f *.xml

@@ -12,7 +12,6 @@ static Token current_token;
 static int current_char;
 static bool has_more_chars = true;
 static FILE *fp;
-static FILE *fp_out;
 
 void next_char() {
   if ((current_char = fgetc(fp)) != EOF) {
@@ -62,7 +61,7 @@ void handle_block_comment() {
   }
 }
 
-void handle_alpha_or_underscore() {
+void handle_identifier_or_keyword() {
   int p = 0;
   while (isalnum(current_char) || current_char == '_') {
     current_token.literal[p] = (char)current_char;
@@ -74,7 +73,7 @@ void handle_alpha_or_underscore() {
   set_token_type();
 }
 
-void handle_digit() {
+void handle_integer() {
   int p = 0;
 
   while (isdigit(current_char)) {
@@ -144,21 +143,16 @@ void reset_token() {
 
 void tokenize_file(char *filename) {
   fp = fopen(filename, "r");
-  char filename_no_ext[MAX_FILENAME_LENGTH];
 
   if (fp == NULL) {
     printf("Error opening source file: %s\n", filename);
     exit(1);
   }
 
-  get_filename_no_ext(filename, filename_no_ext);
-
-  fp_out = fopen(strcat(filename_no_ext, ".xml"), "w");
-  fputs("<tokens>\n", fp_out);
   next_char();
 }
 
-void advance() {
+Token *advance(void) {
   reset_token();
 
   while (ignore()) {
@@ -166,48 +160,20 @@ void advance() {
   }
 
   if (isalpha(current_char) || current_char == '_') {
-    handle_alpha_or_underscore();
+    handle_identifier_or_keyword();
   } else if (current_char == '"') {
     handle_double_quote();
   } else if (isdigit(current_char)) {
-    handle_digit();
+    handle_integer();
   } else if (is_symbol((char)current_char)) {
     handle_symbol();
   }
 
-  return;
+  return &current_token;
 }
 
 bool has_more_tokens() { return has_more_chars; }
 
-void print_token() {
-  if (current_token.type == Keyword) {
-    fprintf(fp_out, "<keyword> %s </keyword>\n", current_token.literal);
-  } else if (current_token.type == StringConst) {
-    fprintf(fp_out, "<stringConstant> %s </stringConstant>\n",
-            current_token.literal);
-  } else if (current_token.type == IntConst) {
-    fprintf(fp_out, "<integerConstant> %s </integerConstant>\n",
-            current_token.literal);
-  } else if (current_token.type == Identifier) {
-    fprintf(fp_out, "<identifier> %s </identifier>\n", current_token.literal);
-  } else if (current_token.type == Symbol) {
-    if (current_token.literal[0] == LESS_THAN) {
-      fprintf(fp_out, "<symbol> &lt; </symbol>\n");
-    } else if (current_token.literal[0] == GREATER_THAN) {
-      fprintf(fp_out, "<symbol> &gt; </symbol>\n");
-    } else if (current_token.literal[0] == '"') {
-      fprintf(fp_out, "<symbol> &quot; </symbol>\n");
-    } else if (current_token.literal[0] == AMPERSAND) {
-      fprintf(fp_out, "<symbol> &amp; </symbol>\n");
-    } else {
-      fprintf(fp_out, "<symbol> %s </symbol>\n", current_token.literal);
-    }
-  }
-}
-
 void close_tokenizer() {
-  fputs("</tokens>\n", fp_out);
-  fclose(fp_out);
   fclose(fp);
 }

@@ -6,20 +6,17 @@
 #include <string.h>
 #include <time.h>
 
+#include "compilation_engine.h"
 #include "constants.h"
 #include "tokenizer.h"
 #include "util.h"
 
 void process_file(char *filename) {
   tokenize_file(filename);
-  advance();
-
-  while (has_more_tokens()) {
-    print_token();
-    advance();
-  }
-
+  init_parser(filename);
+  parse(advance());
   close_tokenizer();
+  close_parser();
 }
 
 void process_dir(char *dirname) {
@@ -59,9 +56,9 @@ int main(int argc, char *argv[]) {
 
   char *is_file = strstr(filename, ".jack");
 
-  if (is_file == NULL) { // Directory
+  if (is_file == NULL) {
     process_dir(filename);
-  } else { // File
+  } else {
     process_file(filename);
   }
 

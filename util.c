@@ -45,7 +45,7 @@ bool is_symbol(char c) {
 }
 
 bool is_keyword(Token *token) {
-  return strcmp(CLASS, token->literal) == 0 ||
+  return strcmp(CLASS, (char *)token->literal) == 0 ||
          strcmp(CONSTRUCTOR, token->literal) == 0 ||
          strcmp(FUNCTION, token->literal) == 0 ||
          strcmp(METHOD, token->literal) == 0 ||
