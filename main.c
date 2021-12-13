@@ -6,8 +6,8 @@
 #include <string.h>
 #include <time.h>
 
-#include "compilation_engine.h"
 #include "constants.h"
+#include "parser.h"
 #include "tokenizer.h"
 #include "util.h"
 
