@@ -51,9 +51,7 @@ void parse(Token *token) {
 }
 
 void init_parser(char *filename) {
-  char filename_no_ext[MAX_FILENAME_LENGTH];
-  get_filename_no_ext(filename, filename_no_ext);
-  fp_out = fopen(strcat(filename_no_ext, ".xml"), "w");
+  fp_out = fopen(strcat(strtok(filename, "."), ".xml"), "w");
 }
 
 void close_parser() { fclose(fp_out); }

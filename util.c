@@ -21,11 +21,7 @@ bool is_dir(const char *path) {
 
 void get_filename_no_ext(char *filename, char *dest) {
   int i = 0;
-  while (filename[i] != '/') {
-    if (filename[i] == '.') {
-      i = -1;
-      break;
-    }
+  while (filename[i] != '.') {
     i++;
   }
 
