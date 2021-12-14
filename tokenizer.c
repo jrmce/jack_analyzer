@@ -13,6 +13,8 @@ static int current_char;
 static bool has_more_chars = true;
 static FILE *fp;
 
+int peek() { return current_char; }
+
 void next_char() {
   if ((current_char = fgetc(fp)) != EOF) {
     has_more_chars = true;

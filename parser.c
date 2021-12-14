@@ -25,6 +25,16 @@ void parse(Token *token) {
                (strcmp(token->literal, FUNCTION) == 0) ||
                (strcmp(token->literal, METHOD) == 0)) {
       compile_subroutine_dec(token, fp_out);
+    } else if (strcmp(token->literal, LET) == 0) {
+      compile_let(token, fp_out);
+    } else if (strcmp(token->literal, IF) == 0) {
+      compile_if(token, fp_out);
+    } else if (strcmp(token->literal, WHILE) == 0) {
+      compile_while(token, fp_out);
+    } else if (strcmp(token->literal, DO) == 0) {
+      compile_do(token, fp_out);
+    } else if (strcmp(token->literal, RETURN) == 0) {
+      compile_return(token, fp_out);
     }
     break;
   case Identifier:

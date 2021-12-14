@@ -8,5 +8,6 @@ void tokenize_file(char *filename);
 void close_tokenizer(void);
 bool has_more_tokens(void);
 Token *advance(void);
+int peek();
 
 #endif

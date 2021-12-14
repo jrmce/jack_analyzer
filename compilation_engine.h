@@ -17,4 +17,5 @@ void compile_return(Token *token, FILE *fp_out);
 void compile_expression(Token *token, FILE *fp_out);
 void compile_term(Token *token, FILE *fp_out);
 void compile_expression_list(Token *token, FILE *fp_out);
+void compile_subroutine_call(Token *token, FILE *fp_out);
 #endif
