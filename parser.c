@@ -8,33 +8,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-FILE *fp_out;
-
-void print_terminal(Token *token);
-void parse(Token *token);
-
 void parse(Token *token) {
   switch (token->type) {
   case Keyword:
     if (strcmp(token->literal, CLASS) == 0) {
-      compile_class(token, fp_out);
+      compile_class(token);
     } else if ((strcmp(token->literal, STATIC) == 0) ||
                strcmp(token->literal, FIELD) == 0) {
-      compile_class_var_dec(token, fp_out);
+      compile_class_var_dec(token);
     } else if ((strcmp(token->literal, CONSTRUCTOR) == 0) ||
                (strcmp(token->literal, FUNCTION) == 0) ||
                (strcmp(token->literal, METHOD) == 0)) {
-      compile_subroutine_dec(token, fp_out);
+      compile_subroutine_dec(token);
     } else if (strcmp(token->literal, LET) == 0) {
-      compile_let(token, fp_out);
+      compile_let(token);
     } else if (strcmp(token->literal, IF) == 0) {
-      compile_if(token, fp_out);
+      compile_if(token);
     } else if (strcmp(token->literal, WHILE) == 0) {
-      compile_while(token, fp_out);
+      compile_while(token);
     } else if (strcmp(token->literal, DO) == 0) {
-      compile_do(token, fp_out);
+      compile_do(token);
     } else if (strcmp(token->literal, RETURN) == 0) {
-      compile_return(token, fp_out);
+      compile_return(token);
     }
     break;
   case Identifier:
@@ -48,37 +43,4 @@ void parse(Token *token) {
   default:
     break;
   }
-}
-
-void init_parser(char *filename) {
-  fp_out = fopen(strcat(strtok(filename, "."), ".xml"), "w");
-}
-
-void close_parser() { fclose(fp_out); }
-
-void print_terminal(Token *token) {
-  if (token->type == Keyword) {
-    fprintf(fp_out, "<keyword> %s </keyword>\n", token->literal);
-  } else if (token->type == StringConst) {
-    fprintf(fp_out, "<stringConstant> %s </stringConstant>\n", token->literal);
-  } else if (token->type == IntConst) {
-    fprintf(fp_out, "<integerConstant> %s </integerConstant>\n",
-            token->literal);
-  } else if (token->type == Identifier) {
-    fprintf(fp_out, "<identifier> %s </identifier>\n", token->literal);
-  } else if (token->type == Symbol) {
-    if (token->literal[0] == LESS_THAN) {
-      fprintf(fp_out, "<symbol> &lt; </symbol>\n");
-    } else if (token->literal[0] == GREATER_THAN) {
-      fprintf(fp_out, "<symbol> &gt; </symbol>\n");
-    } else if (token->literal[0] == '"') {
-      fprintf(fp_out, "<symbol> &quot; </symbol>\n");
-    } else if (token->literal[0] == AMPERSAND) {
-      fprintf(fp_out, "<symbol> &amp; </symbol>\n");
-    } else {
-      fprintf(fp_out, "<symbol> %s </symbol>\n", token->literal);
-    }
-  }
-
-  token = advance();
 }

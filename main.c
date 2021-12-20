@@ -10,13 +10,14 @@
 #include "parser.h"
 #include "tokenizer.h"
 #include "util.h"
+#include "vm_writer.h"
 
 void process_file(char *filename) {
   tokenize_file(filename);
-  init_parser(filename);
+  init_writer(filename);
   parse(advance());
   close_tokenizer();
-  close_parser();
+  close_writer();
 }
 
 void process_dir(char *dirname) {
