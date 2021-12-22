@@ -10,6 +10,9 @@
 #include "token.h"
 #include "util.h"
 
+const char *OPERATIONS[9] = {OP_ADD, OP_SUB, SYS_MULTIPLY, SYS_DIVIDE, OP_AND,
+                             OP_OR,  OP_LT,  OP_GT,        OP_EQ};
+
 bool is_dir(const char *path) {
   struct stat statbuf;
   if (stat(path, &statbuf) != 0) {
@@ -25,7 +28,7 @@ void get_filename_no_ext(char *filename, char *dest) {
     i++;
   }
 
-  strncpy(dest, &filename[i + 1], MAX_FILENAME_LENGTH);
+  strncpy(dest, &filename[i + 1], MAX_STRING_LENGTH);
   strtok(dest, ".");
 }
 

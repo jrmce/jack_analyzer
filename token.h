@@ -1,6 +1,8 @@
 #ifndef TOKEN_TYPE_H
 #define TOKEN_TYPE_H
 
+#include "constants.h"
+
 typedef enum {
   Keyword,
   Symbol,
@@ -11,7 +13,7 @@ typedef enum {
 } TokenType;
 typedef struct {
   TokenType type;
-  char literal[256];
+  char literal[MAX_STRING_LENGTH];
 } Token;
 
 #endif

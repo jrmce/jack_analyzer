@@ -31,7 +31,7 @@ void process_dir(char *dirname) {
 
   while ((de = readdir(dr)) != NULL) {
     if (strstr(de->d_name, ".jack") != NULL) {
-      char dirname_c[MAX_FILENAME_LENGTH];
+      char dirname_c[MAX_STRING_LENGTH];
       strcpy(dirname_c, dirname);
       strcat(dirname_c, "/");
       strcat(dirname_c, de->d_name);
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   start = clock();
 
-  if (argc < 2) {
+  if (argc < 1) {
     exit(1);
   }
 
